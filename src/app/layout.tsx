@@ -3,8 +3,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
-  title: 'H5 Inspector',
-  description: 'A developer utility app for inspecting .h5 machine learning models.',
+  title: 'Power Predict',
+  description: 'Inspect ML models and forecast energy consumption.',
 };
 
 export default function RootLayout({
