@@ -37,7 +37,7 @@ You have been given a machine learning model '{{modelName}}' trained on the '{{d
 Your task is to predict the energy consumption for the date: {{date}}.
 
 Based on typical energy usage patterns, provide a realistic but fictional prediction in kWh and a brief analysis. For example, mention factors like day of the week, typical seasonal load, and how the model might interpret these to arrive at its prediction. Keep the analysis concise (2-3 sentences).
-Generate a random but plausible kWh value between 100 and 1500.
+Generate a random but plausible kWh value between 100 and 300.
 `,
 });
 
