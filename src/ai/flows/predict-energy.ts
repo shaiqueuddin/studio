@@ -37,8 +37,13 @@ You are simulating a prediction for the machine learning model '{{modelName}}'.
 Your task is to predict the energy consumption for the date: {{date}}.
 The forecasted temperature range for this day is between {{temperatureRange.[0]}}°C and {{temperatureRange.[1]}}°C.
 
-Based on typical energy usage patterns, provide a realistic but fictional prediction in kWh and a brief analysis. For example, mention factors like day of the week, typical seasonal load, and how temperature (e.g., use of HVAC systems) might influence consumption. Keep the analysis concise (2-3 sentences).
-Generate a random but plausible kWh value between 100 and 300, adjusting it based on the temperature. Higher or lower temperatures outside a comfortable range (e.g., 18-22°C) should result in higher consumption.
+Based on typical energy usage patterns, provide a realistic but fictional prediction in kWh and a brief analysis. For example, mention factors like day of the week, typical seasonal load, and how temperature might influence consumption. Keep the analysis concise (2-3 sentences).
+Generate a random but plausible kWh value between 100 and 300.
+
+The energy consumption is most efficient when the temperature is between 24-29°C.
+- If the temperature is lower than this range, consumption should increase due to heating loads.
+- If the temperature is higher than this range, consumption should increase due to cooling loads.
+- Adjust the predicted kWh value based on how far the temperature is from this efficient range.
 `,
 });
 
