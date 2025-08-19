@@ -8,7 +8,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { UploadCloud, Loader, FileCode, Layers, Cpu, Hash, Copy, XCircle } from "lucide-react";
+import { UploadCloud, Loader, FileCode, Layers, Cpu, Hash, Copy, XCircle, Calendar as CalendarIcon, Zap, BrainCircuit } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { predictEnergyConsumption, type PredictEnergyOutput } from "@/ai/flows/predict-energy";
+
 
 // Mock data to simulate .h5 model inspection
 const mockModelData: ModelData = {
@@ -90,6 +96,121 @@ const LayerDetailsTable = ({ layers, onSelectLayer }: { layers: Layer[], onSelec
     </CardContent>
   </Card>
 );
+
+const PredictionSection = ({ modelName }: { modelName: string }) => {
+    const [date, setDate] = useState<Date | undefined>(new Date());
+    const [prediction, setPrediction] = useState<PredictEnergyOutput | null>(null);
+    const [isPredicting, setIsPredicting] = useState(false);
+    const { toast } = useToast();
+
+    const handlePrediction = async () => {
+        if (!date) {
+            toast({
+                variant: "destructive",
+                title: "No Date Selected",
+                description: "Please select a date to run the prediction.",
+            });
+            return;
+        }
+
+        setIsPredicting(true);
+        setPrediction(null);
+        try {
+            const result = await predictEnergyConsumption({
+                date: date.toISOString(),
+                modelName: modelName,
+                datasetName: "your_dataset.txt", // Placeholder, as we don't have dataset info here
+            });
+            setPrediction(result);
+            toast({
+                title: "Prediction Complete",
+                description: `Energy consumption predicted for ${format(date, "PPP")}.`,
+            });
+        } catch (error) {
+            console.error("Prediction failed:", error);
+            toast({
+                variant: "destructive",
+                title: "Prediction Failed",
+                description: "An error occurred while generating the prediction.",
+            });
+        } finally {
+            setIsPredicting(false);
+        }
+    };
+    
+    return (
+        <Card className="mt-8">
+            <CardHeader>
+                <CardTitle>Energy Consumption Prediction</CardTitle>
+                <CardDescription>
+                    Select a date to forecast energy consumption using the uploaded model.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="grid md:grid-cols-2 gap-6 items-start">
+                    <div className="flex flex-col gap-4">
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                        "w-full justify-start text-left font-normal",
+                                        !date && "text-muted-foreground"
+                                    )}
+                                >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {date ? format(date, "PPP") : <span>Pick a date</span>}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                                <Calendar
+                                    mode="single"
+                                    selected={date}
+                                    onSelect={setDate}
+                                    initialFocus
+                                />
+                            </PopoverContent>
+                        </Popover>
+                        <Button onClick={handlePrediction} disabled={isPredicting || !date} size="lg">
+                            {isPredicting ? (
+                                <Loader className="mr-2 h-5 w-5 animate-spin" />
+                            ) : (
+                                <Zap className="mr-2 h-5 w-5" />
+                            )}
+                            Predict Consumption
+                        </Button>
+                    </div>
+
+                    <div className="min-h-[120px] flex items-center justify-center">
+                        {isPredicting && (
+                             <div className="text-center text-muted-foreground">
+                                <BrainCircuit className="h-10 w-10 mx-auto text-primary animate-pulse" />
+                                <p className="mt-2 font-medium">AI is analyzing patterns...</p>
+                             </div>
+                        )}
+                        {prediction && !isPredicting && (
+                            <Card className="w-full bg-primary/10 border-primary/30">
+                                <CardHeader className="pb-2">
+                                    <CardDescription className="text-primary-foreground/80">Predicted Consumption for {date ? format(date, "PPP") : ''}</CardDescription>
+                                    <CardTitle className="text-4xl text-primary">{prediction.predictedConsumption.toFixed(2)} kWh</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-sm text-muted-foreground">{prediction.analysis}</p>
+                                </CardContent>
+                            </Card>
+                        )}
+                         {!prediction && !isPredicting && (
+                            <div className="text-center text-muted-foreground">
+                                <p>Prediction results will appear here.</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    );
+};
+
 
 export default function H5Inspector() {
   const [modelData, setModelData] = useState<ModelData | null>(null);
@@ -177,6 +298,7 @@ export default function H5Inspector() {
 
       <ArchitectureSummary data={modelData} />
       <LayerDetailsTable layers={modelData.layers} onSelectLayer={setSelectedLayer} />
+      <PredictionSection modelName={modelData.name} />
 
       <Dialog open={!!selectedLayer} onOpenChange={(open) => !open && setSelectedLayer(null)}>
         <DialogContent className="max-w-2xl">
