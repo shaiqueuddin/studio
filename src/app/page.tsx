@@ -1,6 +1,4 @@
-import DatasetUploader from '@/components/dataset-uploader';
 import H5Inspector from '@/components/h5-inspector';
-import { Separator } from '@/components/ui/separator';
 
 export default function Home() {
   return (
@@ -14,16 +12,6 @@ export default function Home() {
         </header>
         <main>
           <H5Inspector />
-          <Separator className="my-12" />
-          <div className="mt-8 text-center">
-             <h2 className="text-3xl lg:text-4xl font-bold font-headline text-primary">Dataset Viewer</h2>
-            <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
-              Upload a semicolon-separated `.txt` dataset to view its contents in a table.
-            </p>
-          </div>
-          <div className="mt-8">
-            <DatasetUploader />
-          </div>
         </main>
       </div>
     </div>
