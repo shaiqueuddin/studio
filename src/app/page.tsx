@@ -18,7 +18,7 @@ export default function Home() {
           <div className="mt-8 text-center">
              <h2 className="text-3xl lg:text-4xl font-bold font-headline text-primary">Dataset Viewer</h2>
             <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
-              Upload a comma-separated `.txt` dataset to view its contents in a table.
+              Upload a semicolon-separated `.txt` dataset to view its contents in a table.
             </p>
           </div>
           <div className="mt-8">
