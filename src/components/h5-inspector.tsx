@@ -8,10 +8,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { UploadCloud, Loader, FileCode, Layers, Cpu, Hash, Copy, XCircle, Calendar as CalendarIcon, Zap, BrainCircuit, Thermometer } from "lucide-react";
+import { UploadCloud, Loader, FileCode, Layers, Cpu, Hash, Copy, XCircle, Calendar as CalendarIcon, Zap, BrainCircuit, Thermometer, Building } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Slider } from "@/components/ui/slider"
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -101,7 +101,7 @@ const LayerDetailsTable = ({ layers, onSelectLayer }: { layers: Layer[], onSelec
 
 const PredictionSection = ({ modelName }: { modelName: string }) => {
     const [date, setDate] = useState<Date | undefined>(new Date());
-    const [temperature, setTemperature] = useState([10, 25]);
+    const [city, setCity] = useState("San Francisco");
     const [prediction, setPrediction] = useState<PredictEnergyOutput | null>(null);
     const [isPredicting, setIsPredicting] = useState(false);
     const { toast } = useToast();
@@ -115,6 +115,14 @@ const PredictionSection = ({ modelName }: { modelName: string }) => {
             });
             return;
         }
+        if (!city) {
+            toast({
+                variant: "destructive",
+                title: "No City Entered",
+                description: "Please enter a city to run the prediction.",
+            });
+            return;
+        }
 
         setIsPredicting(true);
         setPrediction(null);
@@ -122,7 +130,7 @@ const PredictionSection = ({ modelName }: { modelName: string }) => {
             const result = await predictEnergyConsumption({
                 date: date.toISOString(),
                 modelName: modelName,
-                temperatureRange: temperature,
+                city: city,
             });
             setPrediction(result);
             toast({
@@ -146,13 +154,13 @@ const PredictionSection = ({ modelName }: { modelName: string }) => {
             <CardHeader>
                 <CardTitle>Energy Consumption Prediction</CardTitle>
                 <CardDescription>
-                    Select a date and temperature range to forecast energy consumption.
+                    Select a date and city to forecast energy consumption.
                 </CardDescription>
             </CardHeader>
             <CardContent>
                 <div className="grid md:grid-cols-2 gap-6 items-start">
                     <div className="flex flex-col gap-6">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4">
                              <Popover>
                                 <PopoverTrigger asChild>
                                     <Button
@@ -175,26 +183,23 @@ const PredictionSection = ({ modelName }: { modelName: string }) => {
                                     />
                                 </PopoverContent>
                             </Popover>
-                            <div className="flex items-center justify-center text-sm font-medium border rounded-md">
-                                <Thermometer className="mr-2 h-4 w-4 text-muted-foreground" />
-                                <span>{temperature[0]}°C &ndash; {temperature[1]}°C</span>
-                            </div>
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="temperature">Temperature Range (°C)</Label>
-                            <Slider
-                                id="temperature"
-                                min={-20}
-                                max={40}
-                                step={1}
-                                value={temperature}
-                                onValueChange={setTemperature}
-                                className="w-full"
-                            />
+                            <Label htmlFor="city">City</Label>
+                             <div className="relative">
+                                <Building className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input 
+                                    id="city" 
+                                    placeholder="e.g. New York" 
+                                    value={city} 
+                                    onChange={(e) => setCity(e.target.value)}
+                                    className="pl-10"
+                                />
+                            </div>
                         </div>
                         
-                        <Button onClick={handlePrediction} disabled={isPredicting || !date} size="lg">
+                        <Button onClick={handlePrediction} disabled={isPredicting || !date || !city} size="lg">
                             {isPredicting ? (
                                 <Loader className="mr-2 h-5 w-5 animate-spin" />
                             ) : (
@@ -213,11 +218,15 @@ const PredictionSection = ({ modelName }: { modelName: string }) => {
                         )}
                         {prediction && !isPredicting && (
                             <Card className="w-full bg-primary/10 border-primary/30">
-                                <CardHeader className="pb-2">
+                                <CardHeader className="pb-4">
                                     <CardDescription className="text-primary-foreground/80">Predicted Consumption for {date ? format(date, "PPP") : ''}</CardDescription>
                                     <CardTitle className="text-4xl text-primary">{prediction.predictedConsumption.toFixed(2)} kWh</CardTitle>
                                 </CardHeader>
                                 <CardContent>
+                                    <div className="flex items-center text-sm text-muted-foreground mb-2">
+                                         <Thermometer className="mr-2 h-4 w-4" />
+                                         <span>Forecasted Temp: {prediction.temperatureRange[0]}°C &ndash; {prediction.temperatureRange[1]}°C</span>
+                                    </div>
                                     <p className="text-sm text-muted-foreground">{prediction.analysis}</p>
                                  </CardContent>
                             </Card>
