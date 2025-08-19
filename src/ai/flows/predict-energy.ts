@@ -13,7 +13,6 @@ import {z} from 'genkit';
 const PredictEnergyInputSchema = z.object({
   date: z.string().describe('The date for which to predict energy consumption, in ISO format.'),
   modelName: z.string().describe('The name of the machine learning model.'),
-  datasetName: z.string().describe('The name of the dataset used for training.'),
 });
 export type PredictEnergyInput = z.infer<typeof PredictEnergyInputSchema>;
 
@@ -32,11 +31,11 @@ const prompt = ai.definePrompt({
   input: {schema: PredictEnergyInputSchema},
   output: {schema: PredictEnergyOutputSchema},
   prompt: `You are an AI data scientist specializing in energy consumption forecasting.
-You have been given a machine learning model '{{modelName}}' trained on the '{{datasetName}}' dataset.
+You are simulating a prediction for the machine learning model '{{modelName}}'.
 
 Your task is to predict the energy consumption for the date: {{date}}.
 
-Based on typical energy usage patterns, provide a realistic but fictional prediction in kWh and a brief analysis. For example, mention factors like day of the week, typical seasonal load, and how the model might interpret these to arrive at its prediction. Keep the analysis concise (2-3 sentences).
+Based on typical energy usage patterns, provide a realistic but fictional prediction in kWh and a brief analysis. For example, mention factors like day of the week, typical seasonal load, and how a model might interpret these to arrive at its prediction. Keep the analysis concise (2-3 sentences).
 Generate a random but plausible kWh value between 100 and 300.
 `,
 });

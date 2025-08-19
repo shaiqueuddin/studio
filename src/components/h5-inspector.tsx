@@ -119,7 +119,6 @@ const PredictionSection = ({ modelName }: { modelName: string }) => {
             const result = await predictEnergyConsumption({
                 date: date.toISOString(),
                 modelName: modelName,
-                datasetName: "your_dataset.txt", // Placeholder, as we don't have dataset info here
             });
             setPrediction(result);
             toast({
@@ -196,7 +195,7 @@ const PredictionSection = ({ modelName }: { modelName: string }) => {
                                 </CardHeader>
                                 <CardContent>
                                     <p className="text-sm text-muted-foreground">{prediction.analysis}</p>
-                                </CardContent>
+                                 </CardContent>
                             </Card>
                         )}
                          {!prediction && !isPredicting && (
