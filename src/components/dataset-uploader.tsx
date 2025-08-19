@@ -16,7 +16,9 @@ const DatasetTable = ({ dataset }: { dataset: Dataset }) => (
         <FileText className="mr-2 h-5 w-5" />
         {dataset.name}
       </CardTitle>
-      <CardDescription>Preview of the uploaded dataset.</CardDescription>
+      <CardDescription>
+        Showing the first 5 rows of the uploaded dataset.
+      </CardDescription>
     </CardHeader>
     <CardContent>
       <div className="overflow-x-auto">
@@ -29,7 +31,7 @@ const DatasetTable = ({ dataset }: { dataset: Dataset }) => (
             </TableRow>
           </TableHeader>
           <TableBody>
-            {dataset.rows.map((row, rowIndex) => (
+            {dataset.rows.slice(0, 5).map((row, rowIndex) => (
               <TableRow key={rowIndex}>
                 {row.map((cell, cellIndex) => (
                   <TableCell key={cellIndex}>{cell}</TableCell>
