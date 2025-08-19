@@ -8,9 +8,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { UploadCloud, Loader, FileCode, Layers, Cpu, Hash, Copy, XCircle, Calendar as CalendarIcon, Zap, BrainCircuit } from "lucide-react";
+import { UploadCloud, Loader, FileCode, Layers, Cpu, Hash, Copy, XCircle, Calendar as CalendarIcon, Zap, BrainCircuit, Thermometer } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Slider } from "@/components/ui/slider"
+import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { predictEnergyConsumption, type PredictEnergyOutput } from "@/ai/flows/predict-energy";
@@ -99,6 +101,7 @@ const LayerDetailsTable = ({ layers, onSelectLayer }: { layers: Layer[], onSelec
 
 const PredictionSection = ({ modelName }: { modelName: string }) => {
     const [date, setDate] = useState<Date | undefined>(new Date());
+    const [temperature, setTemperature] = useState([10, 25]);
     const [prediction, setPrediction] = useState<PredictEnergyOutput | null>(null);
     const [isPredicting, setIsPredicting] = useState(false);
     const { toast } = useToast();
@@ -119,6 +122,7 @@ const PredictionSection = ({ modelName }: { modelName: string }) => {
             const result = await predictEnergyConsumption({
                 date: date.toISOString(),
                 modelName: modelName,
+                temperatureRange: temperature,
             });
             setPrediction(result);
             toast({
@@ -142,34 +146,54 @@ const PredictionSection = ({ modelName }: { modelName: string }) => {
             <CardHeader>
                 <CardTitle>Energy Consumption Prediction</CardTitle>
                 <CardDescription>
-                    Select a date to forecast energy consumption using the uploaded model.
+                    Select a date and temperature range to forecast energy consumption.
                 </CardDescription>
             </CardHeader>
             <CardContent>
                 <div className="grid md:grid-cols-2 gap-6 items-start">
-                    <div className="flex flex-col gap-4">
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button
-                                    variant={"outline"}
-                                    className={cn(
-                                        "w-full justify-start text-left font-normal",
-                                        !date && "text-muted-foreground"
-                                    )}
-                                >
-                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {date ? format(date, "PPP") : <span>Pick a date</span>}
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                                <Calendar
-                                    mode="single"
-                                    selected={date}
-                                    onSelect={setDate}
-                                    initialFocus
-                                />
-                            </PopoverContent>
-                        </Popover>
+                    <div className="flex flex-col gap-6">
+                        <div className="grid grid-cols-2 gap-4">
+                             <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant={"outline"}
+                                        className={cn(
+                                            "w-full justify-start text-left font-normal",
+                                            !date && "text-muted-foreground"
+                                        )}
+                                    >
+                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        {date ? format(date, "PPP") : <span>Pick a date</span>}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0">
+                                    <Calendar
+                                        mode="single"
+                                        selected={date}
+                                        onSelect={setDate}
+                                        initialFocus
+                                    />
+                                </PopoverContent>
+                            </Popover>
+                            <div className="flex items-center justify-center text-sm font-medium border rounded-md">
+                                <Thermometer className="mr-2 h-4 w-4 text-muted-foreground" />
+                                <span>{temperature[0]}°C &ndash; {temperature[1]}°C</span>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="temperature">Temperature Range (°C)</Label>
+                            <Slider
+                                id="temperature"
+                                min={-20}
+                                max={40}
+                                step={1}
+                                value={temperature}
+                                onValueChange={setTemperature}
+                                className="w-full"
+                            />
+                        </div>
+                        
                         <Button onClick={handlePrediction} disabled={isPredicting || !date} size="lg">
                             {isPredicting ? (
                                 <Loader className="mr-2 h-5 w-5 animate-spin" />
@@ -180,7 +204,7 @@ const PredictionSection = ({ modelName }: { modelName: string }) => {
                         </Button>
                     </div>
 
-                    <div className="min-h-[120px] flex items-center justify-center">
+                    <div className="min-h-[160px] flex items-center justify-center">
                         {isPredicting && (
                              <div className="text-center text-muted-foreground">
                                 <BrainCircuit className="h-10 w-10 mx-auto text-primary animate-pulse" />
