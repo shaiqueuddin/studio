@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { UploadCloud, Loader, XCircle, FileText } from "lucide-react";
+import { UploadCloud, Loader, XCircle, FileText, Scale } from "lucide-react";
 
 const DatasetTable = ({ dataset }: { dataset: Dataset }) => (
   <Card>
@@ -102,6 +102,44 @@ export default function DatasetUploader() {
   const handleReset = () => {
     setDataset(null);
   };
+  
+  const handleNormalize = () => {
+    if (!dataset) return;
+
+    const newRows = dataset.rows.map(r => [...r]); // Deep copy
+    const columnCount = dataset.headers.length;
+
+    for (let col = 0; col < columnCount; col++) {
+      // Check if the column is numeric
+      const isNumeric = newRows.every(row => !isNaN(parseFloat(row[col])) && isFinite(Number(row[col])));
+
+      if (isNumeric) {
+        const numbers = newRows.map(row => parseFloat(row[col]));
+        const min = Math.min(...numbers);
+        const max = Math.max(...numbers);
+        const range = max - min;
+
+        if (range === 0) {
+          // All values in the column are the same, normalize to 0.
+           newRows.forEach(row => {
+            row[col] = "0.00";
+          });
+        } else {
+          newRows.forEach(row => {
+            const value = parseFloat(row[col]);
+            const normalized = (value - min) / range;
+            row[col] = normalized.toFixed(2);
+          });
+        }
+      }
+    }
+    
+    setDataset({ ...dataset, rows: newRows });
+    toast({
+        title: "Dataset Normalized",
+        description: "Numerical features have been scaled to a 0-1 range.",
+    });
+  };
 
   if (!dataset) {
     return (
@@ -133,7 +171,11 @@ export default function DatasetUploader() {
 
   return (
     <div className="animate-in fade-in-50 duration-500">
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-end mb-4 gap-2">
+         <Button onClick={handleNormalize}>
+            <Scale className="mr-2 h-4 w-4" />
+            Normalize Dataset
+        </Button>
         <Button variant="outline" onClick={handleReset}>
           <XCircle className="mr-2 h-4 w-4" />
           Upload Another Dataset
