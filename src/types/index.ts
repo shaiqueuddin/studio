@@ -10,3 +10,9 @@ export interface ModelData {
   name: string;
   layers: Layer[];
 }
+
+export interface Dataset {
+  name: string;
+  headers: string[];
+  rows: string[][];
+}
